@@ -83,14 +83,20 @@ class Analizador:
                     self.columna += 1
                     self.lexema += actual
                     self.agregarToken(tipos.PUNTO_COMA)
+                
+                #Agregamos para los colores
+                elif actual == '#':
+                    self.estado = 6
+                    self.columna += 1
+                    self.lexema += actual
 
                 elif actual == ' ':
                     self.columna += 1
-                    self.estgado = 1
+                    self.estado = 1
                 
                 elif actual == '\n':
                     self.fila += 1
-                    self.columna += 1
+                    self.columna = 1
                     self.estado = 1
                 
                 elif actual == '\r':
@@ -100,6 +106,7 @@ class Analizador:
                     self.columna += 5
                     self.estado = 1
                 
+
                 elif actual == '$' and i == longitud-1:
                     print('Análisis finalizado con éxito :) ')
                 
@@ -125,6 +132,9 @@ class Analizador:
                         self.agregarToken(tipos.PALABRA_RESERVADA)
                     elif self.booleanos(self.lexema):
                         self.agregarToken(tipos.BOOLEANOS)
+                        self.lexema = actual
+                        self.columna += 1
+                        self.agregarToken(tipos.COMA)
                     else:
                         self.agregarToken(tipos.DESCONOCIDO)
                         self.generarErrores = True
@@ -150,10 +160,12 @@ class Analizador:
                     self.columna +=1
                     self.lexema += actual
                 else:
-                    self.lexema += actual
-                    self.columna +=1
-                    self.agregarToken(tipos.NUMERO)
-                    
+                    if actual == ',':
+                        self.agregarToken(tipos.NUMERO)
+                        self.lexema = actual
+                        self.columna += 1
+                        self.agregarToken(tipos.COMA)
+                        
             elif self.estado == 5:
                 if actual != '"':
                     self.estado = 5
@@ -162,9 +174,23 @@ class Analizador:
         
                 elif actual == '"':
                     self.lexema += actual
+                    self.columna += 1
                     self.agregarToken(tipos.CADENA)
 
-                    
+            #Estado para los colores
+            elif self.estado == 6:
+                if actual != '#' and actual!= ']':
+                    self.estado = 6
+                    self.columna += 1
+                    self.lexema += actual
+                elif actual == ']':
+                    self.agregarToken(tipos.COLOR)
+                    self.lexema = actual
+                    self.columna += 1
+                    self.agregarToken(tipos.CORCHETE_D)
+            
+            
+
     #Funcion para ir agregando nuestros tokens
     def agregarToken(self,tipo):
         self.tokens.append(Token(self.lexema, tipo, self.fila, self.columna))
@@ -195,14 +221,15 @@ class Analizador:
         print('---------------------Tokens Válidos-----------------')
         for i in self.tokens:
             if i.tipo != tipos.DESCONOCIDO:
-                print('Lexema = ',i.getLexema(),' Tipo = ',i.getTipo(), ' Fila = ', i.getFila(), ' Columna = ', i.getColumna())
+                print('Lexema : ',i.getLexema(),' Tipo : ',i.getTipo(), ' Fila : ', i.getFila(), ' Columna : ', i.getColumna())
     
     def imprimirErrores(self):
         if self.generarErrores:
             print('------------------------Errores----------------------')
             for i in self.tokens :
                 if i.tipo == tipos.DESCONOCIDO:
-                    print('Lexema = ', i.getLexema(), ' Fila = ', i.getFila(), ' Columna = ', i.getColumna())
+                    print('Lexema : ', i.getLexema(), ' Fila : ', i.getFila(), ' Columna : ', i.getColumna())
         else:
             print('No hay errores por mostrar')
     
+
