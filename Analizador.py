@@ -1,4 +1,6 @@
+from io import open
 from Tokens import Token
+import webbrowser
 
 class Analizador:
     #Variable que guardará lo que vaya recorriendo poco a poco
@@ -89,6 +91,12 @@ class Analizador:
                     self.estado = 6
                     self.columna += 1
                     self.lexema += actual
+                
+                #Ver si es un separador
+                elif actual == '@':
+                    self.estado = 7  #Estado para el manejo de los separadores
+                    self.columna += 1
+                    self.lexema += actual
 
                 elif actual == ' ':
                     self.columna += 1
@@ -115,7 +123,8 @@ class Analizador:
                     self.columna += 1
                     self.agregarToken(tipos.DESCONOCIDO)
                     self.generarErrores = True
-                    
+
+            #Estado para palabras reservadas y booleanos      
             elif self.estado == 2:
                 if actual.isalpha():
                     self.estado = 2
@@ -130,15 +139,34 @@ class Analizador:
                 else:
                     if self.palabra_reservada(self.lexema):
                         self.agregarToken(tipos.PALABRA_RESERVADA)
+                        if actual == ";":
+                            self.lexema = actual
+                            self.columna += 1
+                            self.agregarToken(tipos.PUNTO_COMA)
+                        elif actual == ",":
+                            self.lexema = actual
+                            self.columna += 1
+                            self.agregarToken(tipos.COMA)
+                        elif actual == "=":
+                            self.lexema = actual
+                            self.columna += 1
+                            self.agregarToken(tipos.IGUAL)
+                        elif actual == ' ':
+                            self.columna +=1    
+                        
                     elif self.booleanos(self.lexema):
                         self.agregarToken(tipos.BOOLEANOS)
-                        self.lexema = actual
-                        self.columna += 1
-                        self.agregarToken(tipos.COMA)
+                        if actual == ',':
+                            self.lexema = actual
+                            self.columna += 1
+                            self.agregarToken(tipos.COMA)
+                        elif actual == ' ':
+                            self.columna += 1
                     else:
                         self.agregarToken(tipos.DESCONOCIDO)
                         self.generarErrores = True
-            
+           
+            #Estado de errores
             elif self.estado == 3:
                 if actual.isalpha():
                     self.estado = 3
@@ -154,18 +182,23 @@ class Analizador:
                     self.agregarToken(tipos.DESCONOCIDO)
                     self.generarErrores = True
             
+            #Estado para los numeros
             elif self.estado == 4:
                 if actual.isdigit():
                     self.estado = 4
                     self.columna +=1
                     self.lexema += actual
                 else:
-                    if actual == ',':
+                    if actual == ',' or ' ' or ';':
                         self.agregarToken(tipos.NUMERO)
                         self.lexema = actual
                         self.columna += 1
-                        self.agregarToken(tipos.COMA)
-                        
+                        if actual == ',':
+                            self.agregarToken(tipos.COMA)
+                        elif actual == ';':
+                            self.agregarToken(tipos.PUNTO_COMA)
+            
+            #Estado para las cadenas
             elif self.estado == 5:
                 if actual != '"':
                     self.estado = 5
@@ -179,7 +212,7 @@ class Analizador:
 
             #Estado para los colores
             elif self.estado == 6:
-                if actual != '#' and actual!= ']':
+                if actual != '#' and actual!= ']' and actual != ' ':
                     self.estado = 6
                     self.columna += 1
                     self.lexema += actual
@@ -188,8 +221,22 @@ class Analizador:
                     self.lexema = actual
                     self.columna += 1
                     self.agregarToken(tipos.CORCHETE_D)
-            
-            
+                elif actual == ' ':
+                    self.agregarToken(tipos.COLOR)
+                    self.columna += 1
+            #Estado para los separadores
+            elif self.estado == 7:
+                if actual == '@':
+                    self.estado = 7
+                    self.columna += 1
+                    self.lexema += actual
+                    if self.lexema == "@@@@":
+                        self.agregarToken(tipos.SEPARADOR)
+                else:
+                    self.lexema += actual
+                    self.columna += 1
+                    self.agregarToken(tipos.DESCONOCIDO)
+                    self.generarErrores = True
 
     #Funcion para ir agregando nuestros tokens
     def agregarToken(self,tipo):
@@ -222,6 +269,55 @@ class Analizador:
         for i in self.tokens:
             if i.tipo != tipos.DESCONOCIDO:
                 print('Lexema : ',i.getLexema(),' Tipo : ',i.getTipo(), ' Fila : ', i.getFila(), ' Columna : ', i.getColumna())
+
+        docHTML = open('reporteTokensValidos.html', 'w')
+        docHTML.write('\n<!DOCTYPE html>')
+        docHTML.write('\n<html lang="es">')
+        docHTML.write('\n<meta charset="utf-8">')
+        docHTML.write('\n<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">')
+        docHTML.write('\n<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">')
+        docHTML.write('\n<title>Reporte de Tokens</title>')
+        docHTML.write('\n</head>')
+        docHTML.write('\n<body>')
+        docHTML.write('\n<div class="container">')
+        docHTML.write('\n <h4 class= "text-center"> Lista de Tokens Validos </h4>')
+        docHTML.write('\n<div>')
+        docHTML.write('\n<div class="container">')
+        docHTML.write('\n<table class="table" border="1">')    
+        docHTML.write('\n\t <thead class="thead-dark">')
+        docHTML.write('\n\t\t <tr>')
+        docHTML.write('\n\t\t\t<th scope = "col">Token</th>')
+        docHTML.write('\n\t\t\t<th scope = "col">Lexema</th>')
+        docHTML.write('\n\t\t\t<th scope = "col">Fila</th>')
+        docHTML.write('\n\t\t\t<th scope = "col">Columna</th>')
+        docHTML.write('\n\t\t </tr>')
+        docHTML.write('\n\t </thead>')
+        docHTML.write('\n\t <tbody>')
+        
+        for i in self.tokens:
+            if i.tipo != tipos.DESCONOCIDO:
+                docHTML.write('\n\t\t <tr class="table-success">')
+                docHTML.write('\n\t\t\t<th scope = "row">'+str(i.getTipo()))
+                docHTML.write('</th>')
+                docHTML.write('\n\t\t\t<td>'+str(i.getLexema()))
+                docHTML.write('</td>')
+                docHTML.write('\n\t\t\t<td>'+ str(i.getFila()))
+                docHTML.write('</td>')
+                docHTML.write('\n\t\t\t<td>'+ str(i.getColumna()))
+                docHTML.write('</td>')
+                docHTML.write('\n\t\t </tr>')
+
+        docHTML.write('\n\t </tbody>')
+        docHTML.write('\n</table>')
+        docHTML.write('\n</div>')  
+        docHTML.write('\n</body')
+        docHTML.write('\n</html>')
+        
+        docHTML.close()
+
+        webbrowser.open_new_tab('reporteTokensValidos.html')
+
+        
     
     def imprimirErrores(self):
         if self.generarErrores:
@@ -229,7 +325,55 @@ class Analizador:
             for i in self.tokens :
                 if i.tipo == tipos.DESCONOCIDO:
                     print('Lexema : ', i.getLexema(), ' Fila : ', i.getFila(), ' Columna : ', i.getColumna())
+            
+            docHTML = open('reporteTokensErrores.html', 'w')
+            docHTML.write('\n<!DOCTYPE html>')
+            docHTML.write('\n<html lang="es">')
+            docHTML.write('\n<meta charset="utf-8">')
+            docHTML.write('\n<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">')
+            docHTML.write('\n<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">')
+            docHTML.write('\n<title>Reporte de Tokens</title>')
+            docHTML.write('\n</head>')
+            docHTML.write('\n<body>')
+            docHTML.write('\n<div class="container">')
+            docHTML.write('\n <h4 class= "text-center"> Lista de Tokens con Errores </h4>')
+            docHTML.write('\n<div>')
+            docHTML.write('\n<div class="container">')
+            docHTML.write('\n<table class="table" border="1">')    
+            docHTML.write('\n\t <thead class="thead-dark">')
+            docHTML.write('\n\t\t <tr>')
+            docHTML.write('\n\t\t\t<th scope = "col">Token</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Lexema</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Fila</th>')
+            docHTML.write('\n\t\t\t<th scope = "col">Columna</th>')
+            docHTML.write('\n\t\t </tr>')
+            docHTML.write('\n\t </thead>')
+            docHTML.write('\n\t <tbody>')
+        
+            for i in self.tokens:
+                if i.tipo == tipos.DESCONOCIDO:
+                    docHTML.write('\n\t\t <tr class="table-danger">')
+                    docHTML.write('\n\t\t\t<th scope = "row">'+str(i.getTipo()))
+                    docHTML.write('</th>')
+                    docHTML.write('\n\t\t\t<td>'+str(i.getLexema()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t\t<td>'+ str(i.getFila()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t\t<td>'+ str(i.getColumna()))
+                    docHTML.write('</td>')
+                    docHTML.write('\n\t\t </tr>')
+
+            docHTML.write('\n\t </tbody>')
+            docHTML.write('\n</table>')
+            docHTML.write('\n</div>')  
+            docHTML.write('\n</body')
+            docHTML.write('\n</html>')
+        
+            docHTML.close()
+
+            webbrowser.open_new_tab('reporteTokensErrores.html')
         else:
             print('No hay errores por mostrar')
     
 
+ 

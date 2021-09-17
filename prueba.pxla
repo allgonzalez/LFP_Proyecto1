@@ -1,5 +1,13 @@
-TITULO = "nombre1";
-
-    [4,0,TRUE,#000000],
+TITULO="nombre1";
+    CELDAS = {
+    [ 4 , 0 , TRUE , #000000 ],
     [5,0,TRUE,#000000],
     [6,0,TRUE,#000000]
+    };
+    
+    ALTO = 25 ;
+
+    FILTROS = MIRRORX , DOUBLEMIRROR ;
+    @@@@ 
+    m43
+    b55

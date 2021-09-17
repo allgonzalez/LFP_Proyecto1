@@ -17,7 +17,7 @@ class Token():
     PUNTO_COMA = 11
     BOOLEANOS = 12
     DESCONOCIDO = 13
-
+    SEPARADOR = 14
     #Método constructor
 
     def __init__(self, lexema, tipo, fila, columna):
@@ -60,4 +60,6 @@ class Token():
             return 'PUNTO Y COMA'
         elif self.tipo == self.BOOLEANOS:
             return 'BOOLEANOS'
+        elif self.tipo == self.SEPARADOR:
+            return 'SEPARADOR'
         
