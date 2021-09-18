@@ -1,6 +1,8 @@
 from io import open
+from os import truncate
 from Tokens import Token
 import webbrowser
+from Pintar import Pintar
 
 class Analizador:
     #Variable que guardará lo que vaya recorriendo poco a poco
@@ -15,6 +17,9 @@ class Analizador:
     columna = 1
     #Ayuda a ver si generamos un reporte de errores por si hay símbolos que son desconocidos
     generarErrores = False
+
+    #Arreglo para ver que vamos a pintar
+    celdasPintar = []
 
     #Creamos nuestro scanner que hará todo el trabajo de analisis 
 
@@ -353,7 +358,7 @@ class Analizador:
             for i in self.tokens:
                 if i.tipo == tipos.DESCONOCIDO:
                     docHTML.write('\n\t\t <tr class="table-danger">')
-                    docHTML.write('\n\t\t\t<th scope = "row">'+str(i.getTipo()))
+                    docHTML.write('\n\t\t\t<th scope = "row">'+'DESCONOCIDO')
                     docHTML.write('</th>')
                     docHTML.write('\n\t\t\t<td>'+str(i.getLexema()))
                     docHTML.write('</td>')
@@ -375,5 +380,112 @@ class Analizador:
         else:
             print('No hay errores por mostrar')
     
+    #Funciones para encontrar las celas y agruparlas en arreglos
+    def arreglosColores(self):
+        
+        nombre = ''
+        posx = 0
+        posy = 0
+        booleano = ''
+        color = ''
+        bolNum = False
+        posyB = False
+        fin = False
+        #Encontrar las posiciones y sus respectivos colores
+        for i in self.tokens:
+            if i.tipo == tipos.CADENA:
+                nombre = i.getLexema()
+                
+            elif i.tipo == tipos.CORCHETE_I:
+                bolNum = True
+            elif i.tipo == tipos.NUMERO and bolNum:
+                posx = i.getLexema()
+                posyB = True
+                bolNum = False
+                
+            
+            elif i.tipo == tipos.NUMERO and posyB:
+                posy = i.getLexema()
+            
+                posyB = False
+            
+            elif i.tipo == tipos.BOOLEANOS:
+                booleano = str(i.getLexema())
 
- 
+            elif i.tipo == tipos.COLOR:
+                color = str(i.getLexema())
+
+            elif i.tipo == tipos.CORCHETE_D:
+                fin = True
+            
+            elif fin:
+                self.celdasPintar.append(Pintar(nombre, posx, posy, booleano, color))
+                fin = False
+        
+
+    
+    def Pintar(self):
+        colors = []
+        colorActual = ''
+        fil1 = False
+        fil2 = False
+        col1 = False
+        col2 = False
+        filas = 0
+        columnas = 0
+        
+        #Encontrar las filas y columnas
+        for j in self.tokens:
+            if j.getLexema().lower() == 'filas':
+                fil1 = True
+                continue
+            elif j.getLexema() == '=' and fil1:
+                fil2 = True
+                
+            elif j.tipo == tipos.NUMERO and fil1 and fil2:
+                filas = int(j.getLexema())
+                fil1 = False
+                fil2 = False
+            
+            elif j.getLexema().lower() == 'columnas':
+                col1 = True
+                continue
+            elif j.getLexema() == '=' and col1:
+                col2 = True
+                
+            elif j.tipo== tipos.NUMERO and col1 and col2:
+                columnas = int(j.getLexema())
+                col1 = False
+                col2 = False
+                
+        print('-----------------------Filas y columnas-------------------------')
+        print('Filas: ', filas)
+        print('columnas: ', columnas)
+
+            
+
+        
+
+        #Encontrar colores para poder pintar
+        for y in self.celdasPintar:
+            colorActual = y.getColor()
+            if colorActual in colors:
+                continue
+            else:
+                colors.append(colorActual)
+
+        
+
+
+        #Fases de prueba para imprimir
+        for i in colors:
+            print('Color: ', i)
+
+        for x in self.celdasPintar:
+            print('Nombre: ',x.getNombre(),'PosX: ',x.getPosx(),'PosY: ',x.getPosy(), 'Booleano: ',x.getBooleano(),'Color: ', x.getColor())
+
+        
+    
+    
+
+

@@ -1,8 +1,17 @@
-TITULO="nombre1";
+TITULO="Estrella";
+
+    filas = 3;
+    columnas = 3;
     CELDAS = {
-    [ 4 , 0 , TRUE , #000000 ],
-    [5,0,TRUE,#000000],
-    [6,0,TRUE,#000000]
+    [ 4 , 5 , TRUE , #ff0000 ],
+    [5,3,FALSE,#0000ff],
+    [6,1,TRUE,#ff0000],
+    [ 4 , 5 , TRUE , #ff0000 ],
+    [5,3,FALSE,#8c004b],
+    [6,1,TRUE,#ff0000],
+    [ 4 , 5 , TRUE , #ff0000 ],
+    [5,3,FALSE,#0000ff],
+    [6,1,TRUE,#8c004b],
     };
     
     ALTO = 25 ;
