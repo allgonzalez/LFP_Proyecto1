@@ -3,15 +3,11 @@ TITULO="Estrella";
     filas = 3;
     columnas = 3;
     CELDAS = {
-    [ 4 , 5 , TRUE , #ff0000 ],
-    [5,3,FALSE,#0000ff],
-    [6,1,TRUE,#ff0000],
-    [ 4 , 5 , TRUE , #ff0000 ],
-    [5,3,FALSE,#8c004b],
-    [6,1,TRUE,#ff0000],
-    [ 4 , 5 , TRUE , #ff0000 ],
-    [5,3,FALSE,#0000ff],
-    [6,1,TRUE,#8c004b],
+    [ 1 , 2 , TRUE , #ff0000 ],
+    [1,1,FALSE,#0000ff],
+    [2,2,TRUE,#ff0000],
+    [ 0 , 0 , TRUE , #ff0000 ]
+
     };
     
     ALTO = 25 ;

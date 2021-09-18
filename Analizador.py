@@ -433,7 +433,9 @@ class Analizador:
         col2 = False
         filas = 0
         columnas = 0
-        
+        contColor = 1
+        n=1
+
         #Encontrar las filas y columnas
         for j in self.tokens:
             if j.getLexema().lower() == 'filas':
@@ -462,10 +464,6 @@ class Analizador:
         print('Filas: ', filas)
         print('columnas: ', columnas)
 
-            
-
-        
-
         #Encontrar colores para poder pintar
         for y in self.celdasPintar:
             colorActual = y.getColor()
@@ -474,7 +472,82 @@ class Analizador:
             else:
                 colors.append(colorActual)
 
+        #HAcer el html con los pixeles
         
+        docHTML1 = open('dibujo'+ str(n) +'.html','w')
+        docHTML1.write(
+            """
+<!DOCTYPE html>
+<html lang="es">
+<head>
+\t<meta charset="UTF-8">
+\t<meta http-equiv="X-UA-Compatible" content="IE=edge">
+\t<meta name="viewport" content="width=device-width, initial-scale=1.0">
+\t<style type="text/css">
+\t\ttable, th, td{
+\t\t\tborder: 1px solid black;
+\t\t\tborder-collapse: collapse;
+\t\t}\
+
+\t\tth,td{
+\t\t\tpadding: 15px;
+\t\t}
+\t\t#titulo{\n
+\t\t\ttext-align: center;\n
+\t\t\tfont-size: 30px;\n
+\t\t\tfont-family: Verdana, Geneva, Tahoma, sans-serif;\n
+\t\t}\n
+\t</style>\n
+\t<title>Dibujo</title>\n
+</head>\n
+\t<body>\n
+
+\t\t\t\t<div id="titulo">\n
+\t\t\t\t\t<h4>Mi dibujo</h4>\n
+\t\t\t\t</div>\n
+\t\t\t\t<div id="contenedor">\n
+\t\t\t\t\t<table style="margin: 0 auto;">\n
+            """
+        )
+
+        #Variables para ir contando los cuadros
+        colActual = 0
+        filActual = 0
+        seguir = True
+        #Pintar los cuadritos
+        for x in range(filas):
+            docHTML1.write('\t\t\t\t\t\t<tr>\n')
+            for y in range(columnas):
+                for z in self.celdasPintar:
+                    if int(z.getPosx())== filActual and int(z.getPosy())== colActual and z.getBooleano()=='TRUE':
+                        docHTML1.write('\t\t\t\t\t\t\t<td style="background-color: '+z.getColor()+';">\n')
+                        docHTML1.write('\t\t\t\t\t\t\t</td>\n')
+                        seguir = False
+                        break
+                if seguir:
+                    docHTML1.write('\t\t\t\t\t\t\t<td>\n')
+                    docHTML1.write('\t\t\t\t\t\t\t</td>\n')
+                
+                seguir = True
+                colActual += 1
+            docHTML1.write('\t\t\t\t\t\t</tr>\n')
+                
+            filActual +=1
+            colActual = 0
+            
+            
+        
+        docHTML1.write(
+            """
+\t\t\t\t\t</table>\n
+\t\t\t\t</div>\n
+\t</body>\n
+</html>
+            """
+        )
+
+        
+        docHTML1.close()
 
 
         #Fases de prueba para imprimir
@@ -483,6 +556,10 @@ class Analizador:
 
         for x in self.celdasPintar:
             print('Nombre: ',x.getNombre(),'PosX: ',x.getPosx(),'PosY: ',x.getPosy(), 'Booleano: ',x.getBooleano(),'Color: ', x.getColor())
+
+        self.tokens = []
+        self.celdasPintar=[]
+
 
         
     
