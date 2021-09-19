@@ -1,8 +1,12 @@
+from Tokens import Token
+from Filas_Columnas import FilasColumnas
+from Filtros import Filtros
+from Tamaño import Tamaño
 from io import open
 from os import truncate
-from Tokens import Token
 import webbrowser
 from Pintar import Pintar
+import imgkit
 
 class Analizador:
     #Variable que guardará lo que vaya recorriendo poco a poco
@@ -20,6 +24,18 @@ class Analizador:
 
     #Arreglo para ver que vamos a pintar
     celdasPintar = []
+    
+    #Conjunto de nombres que existen en el arreglo
+    nombres = []
+    
+    #Conjunto de filas y columnas va a contener objetos
+    filasCol = []
+
+    #Conjunto de filtros
+    filtros  = []
+
+    #Conjunto de tamaños
+    tamaños = []
 
     #Creamos nuestro scanner que hará todo el trabajo de analisis 
 
@@ -381,7 +397,7 @@ class Analizador:
             print('No hay errores por mostrar')
     
     #Funciones para encontrar las celas y agruparlas en arreglos
-    def arreglosColores(self):
+    def arreglosCeldasPintar(self):
         
         nombre = ''
         posx = 0
@@ -421,60 +437,157 @@ class Analizador:
             elif fin:
                 self.celdasPintar.append(Pintar(nombre, posx, posy, booleano, color))
                 fin = False
+    
+    def arregloColFil(self):
+        bolFilas = False
+        bolColumnas = False
+        nombre = ''
+        filas= 0
+        columnas = 0
+        fin1 = False
+        fin2 = False        
+        for i in self.tokens:
+            if i.tipo == tipos.CADENA:
+                nombre = i.getLexema()
+                
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'filas':
+                bolFilas = True
+
+            elif i.tipo == tipos.NUMERO and bolFilas:
+                filas = i.getLexema()
+                bolFilas = False
+                fin1 = True
+        
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'columnas':
+                bolColumnas = True
+                
+
+            elif i.tipo == tipos.NUMERO and bolColumnas:
+                columnas = i.getLexema()
+                bolColumnas = False
+                fin2 = True
+            
+            elif fin1 and fin2:
+                self.filasCol.append(FilasColumnas(nombre, filas, columnas))
+                fin1 = False
+                fin2 = False
+
+
+        for x in self.filasCol:
+            print('Nombre: ',x.getNombre(), 'Filas: ', x.getFilas(), 'Columnas: ',x.getColumnas())
+        
         
 
+    ##LImpiar todos los arreglos recordar
+
+    def arregloNombres(self):
+        nombre1 = ''
+        for i in self.tokens:
+            if i.tipo == tipos.CADENA:
+                nombre1 = i.getLexema()
+                self.nombres.append(nombre1)
+
+        for x in self.nombres:
+            print("nombre: ", x)
+
+
+    def arreglosFiltros(self):
+        bolFiltros = False
+        mirrorx = 'empty'
+        mirrory= 'empty'
+        doublemirror = 'empty'
+        nombre2 = 'empty'
+       
+        for i in self.tokens:
+            if i.tipo == tipos.CADENA:
+                nombre2 = i.getLexema()
+                
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'filtros':
+                bolFiltros = True
+                
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower()=='mirrorx' and bolFiltros:
+                mirrorx = i.getLexema()
+        
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'mirrory' and bolFiltros:
+                mirrory = i.getLexema()
+
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'doublemirror' and bolFiltros:
+                doublemirror = i.getLexema()
+            
+            elif i.tipo == tipos.PUNTO_COMA and bolFiltros:
+                self.filtros.append(Filtros(nombre2, mirrorx, mirrory, doublemirror))
+                mirrorx = 'empty'
+                mirrory= 'empty'
+                doublemirror = 'empty'
+                bolFiltros = False
+
+        for j in self.filtros:
+            print('Nombre: ',j.getNombre(), 'Mirrorx ', j.getMirrorx(), 'MirrorY: ',j.getMirrory(), 'DoubleMirror: ', j.getDoubleMirror())
     
-    def Pintar(self):
+    def arregloTamaños(self):
+        bolAncho = False
+        bolAlto = False
+        nombre = ''
+        ancho= 0
+        alto = 0
+        fin1 = False
+        fin2 = False        
+        for i in self.tokens:
+            if i.tipo == tipos.CADENA:
+                nombre = i.getLexema()
+
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'ancho':
+                bolAncho = True
+                
+            elif i.tipo == tipos.NUMERO and bolAncho:
+                ancho = i.getLexema()
+                bolAncho = False
+                fin1 = True
+        
+            elif i.tipo == tipos.PALABRA_RESERVADA and i.getLexema().lower() == 'alto':
+                bolAlto = True
+                
+
+            elif i.tipo == tipos.NUMERO and bolAlto:
+                alto = i.getLexema()
+                bolAlto = False
+                fin2 = True
+            
+            elif fin1 and fin2:
+                self.tamaños.append(Tamaño(nombre, ancho, alto))
+                fin1 = False
+                fin2 = False
+
+
+        for x in self.tamaños:
+                print('Nombre: ',x.getNombre(), 'Ancho: ', x.getAncho(), 'Alto: ',x.getAlto())
+
+    def Pintar(self, nombre):
+
+
         colors = []
         colorActual = ''
-        fil1 = False
-        fil2 = False
-        col1 = False
-        col2 = False
         filas = 0
         columnas = 0
         contColor = 1
-        n=1
+        ancho = 0
+        alto = 0
 
-        #Encontrar las filas y columnas
-        for j in self.tokens:
-            if j.getLexema().lower() == 'filas':
-                fil1 = True
-                continue
-            elif j.getLexema() == '=' and fil1:
-                fil2 = True
-                
-            elif j.tipo == tipos.NUMERO and fil1 and fil2:
-                filas = int(j.getLexema())
-                fil1 = False
-                fil2 = False
-            
-            elif j.getLexema().lower() == 'columnas':
-                col1 = True
-                continue
-            elif j.getLexema() == '=' and col1:
-                col2 = True
-                
-            elif j.tipo== tipos.NUMERO and col1 and col2:
-                columnas = int(j.getLexema())
-                col1 = False
-                col2 = False
-                
-        print('-----------------------Filas y columnas-------------------------')
-        print('Filas: ', filas)
-        print('columnas: ', columnas)
 
-        #Encontrar colores para poder pintar
-        for y in self.celdasPintar:
-            colorActual = y.getColor()
-            if colorActual in colors:
-                continue
-            else:
-                colors.append(colorActual)
-
-        #HAcer el html con los pixeles
+        for j in self.filasCol:
+            if j.getNombre() == nombre:
+                filas = int(j.getFilas())
+                columnas = int(j.getColumnas())
+                break
         
-        docHTML1 = open('dibujo'+ str(n) +'.html','w')
+        for k in self.tamaños:
+            if k.getNombre()== nombre:
+                ancho = int(k.getAncho())
+                alto = int(k.getAlto())
+                break
+  
+        #HAcer el html con los pixeles
+        docHTML1 = open('dibujo.html','w')
         docHTML1.write(
             """
 <!DOCTYPE html>
@@ -487,26 +600,21 @@ class Analizador:
 \t\ttable, th, td{
 \t\t\tborder: 1px solid black;
 \t\t\tborder-collapse: collapse;
-\t\t}\
-
-\t\tth,td{
-\t\t\tpadding: 15px;
 \t\t}
-\t\t#titulo{\n
-\t\t\ttext-align: center;\n
-\t\t\tfont-size: 30px;\n
-\t\t\tfont-family: Verdana, Geneva, Tahoma, sans-serif;\n
-\t\t}\n
+.box {
+    """)
+        docHTML1.write('width : '+str(ancho)+'px; height : '+str(alto)+'px;' )
+        docHTML1.write('height : '+str(alto)+'px;')
+        docHTML1.write('}')
+        docHTML1.write(
+"""
 \t</style>\n
 \t<title>Dibujo</title>\n
 </head>\n
 \t<body>\n
 
-\t\t\t\t<div id="titulo">\n
-\t\t\t\t\t<h4>Mi dibujo</h4>\n
-\t\t\t\t</div>\n
-\t\t\t\t<div id="contenedor">\n
-\t\t\t\t\t<table style="margin: 0 auto;">\n
+\t\t\t\t<div class="box">\n
+\t\t\t\t\t<table style="width: 100%; height: 100%;">\n
             """
         )
 
@@ -519,7 +627,7 @@ class Analizador:
             docHTML1.write('\t\t\t\t\t\t<tr>\n')
             for y in range(columnas):
                 for z in self.celdasPintar:
-                    if int(z.getPosx())== filActual and int(z.getPosy())== colActual and z.getBooleano()=='TRUE':
+                    if int(z.getPosx())== filActual and int(z.getPosy())== colActual and z.getBooleano().lower()=='true' and z.getNombre() == nombre:
                         docHTML1.write('\t\t\t\t\t\t\t<td style="background-color: '+z.getColor()+';">\n')
                         docHTML1.write('\t\t\t\t\t\t\t</td>\n')
                         seguir = False
@@ -548,17 +656,31 @@ class Analizador:
 
         
         docHTML1.close()
+    
+        anchoImagen = ancho + 16
+        options = {
+        'format': 'png',
+        'crop-w': str(anchoImagen),
+        'encoding': "UTF-8",
+    
+        'custom-header' : [
+        ('Accept-Encoding', 'gzip')
+            ]
+        }
+
+        path_wkthmltoimage = r'C:\\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe'
+        config = imgkit.config(wkhtmltoimage=path_wkthmltoimage)
+        imgkit.from_file('dibujo.html', 'dibujo.png', config=config, options=options)
 
 
+    """
         #Fases de prueba para imprimir
         for i in colors:
             print('Color: ', i)
 
         for x in self.celdasPintar:
             print('Nombre: ',x.getNombre(),'PosX: ',x.getPosx(),'PosY: ',x.getPosy(), 'Booleano: ',x.getBooleano(),'Color: ', x.getColor())
-
-        self.tokens = []
-        self.celdasPintar=[]
+    """
 
 
         
