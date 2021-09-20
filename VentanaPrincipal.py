@@ -5,6 +5,7 @@ from Analizador import Analizador
 from PIL import ImageTk,Image
 from io import open
 from tkinter import messagebox
+from tkinter.ttk import *
 
 
 continuar = False
@@ -28,7 +29,14 @@ notebook.add(pesAnalizar, text='Analizar')
 notebook.add(pesImagen, text='Imagen')
 notebook.add(pesTokens, text= 'Tokens')
 
-
+#Estilos
+style = Style()
+ 
+style.configure('TButton', font =
+               ('calibri', 12, 'bold'),
+                    borderwidth = '4')
+style = ttk.Style()
+style.configure("TLabel", foreground="black", background="white")
 
 #Funciones
 def arbirArchivo():
@@ -65,7 +73,6 @@ def generarImagen():
             if var == i.getNombre():
                 if i.getMirrorx().lower() == 'mirrorx':
                     botonMirrorX.place(x=400, y=50)
-                    print('encontrado mirrorx')
                 if i.getMirrory().lower()=='mirrory':
                     botonMirrorY.place(x=500, y=50)
                 if i.getDoubleMirror().lower()=='doublemirror':
@@ -105,8 +112,13 @@ def generarImagen():
         print('hubo un error por favor corriga el documento')
 
 def mensajeError():
-    messagebox.showinfo("ERROR","Tiene un error en su documento y no se puede ejecutar las demás instrucciones, por favor corrígalo")
+    messagebox.showinfo("ERROR","Tiene un error en su documento o no ha cargado ningún archivo y no se puede ejecutar las demás instrucciones, por favor ¡corrígalo!")
 
+def mensajeErrorNoHay():
+    if dibujo.generarErrores:
+        dibujo.imprimirErrores()
+    else:
+        messagebox.showinfo("NO HAY ERRORES","El archivo no contiene errores")
 
     
 
@@ -165,11 +177,40 @@ def limpiarFiltros():
      botonOriginal.place_forget()
 
 #Imagenes
-imagenA = ImageTk.PhotoImage(Image.open('vacio.png').resize((200,200)))
+imagenA = ImageTk.PhotoImage(Image.open('vacio.png').resize((500,500)))
 imagenA1 = Label(pesImagen,image = imagenA).place(x=150,y=250)
 
 #Botones
-botonAnalizar = Button(pesAnalizar, text='Cargar Archivo', command=arbirArchivo).place(x=80, y=50)
+s = ttk.Style()
+s.configure(
+    "MyButton.TButton",
+    background = '#076858',
+    width = 25,
+    foreground="#119B58",
+)
+s.configure(
+    "MyButton1.TButton",
+    background = 'red',
+    width = 25,
+    foreground="red",
+)
+s.configure(
+    "MyButton2.TButton",
+    background = 'blue',
+    width = 45,
+    foreground="green",
+)
+s.configure(
+    "MyButton3.TButton",
+    background = 'red',
+    width = 45,
+    foreground="red",
+)
+botonAnalizar = Button(pesAnalizar, text='Cargar Archivo', command=arbirArchivo, style="MyButton.TButton")
+botonAnalizar.place(x=260, y=250)
+
+#botonAnalizar.config(fg='red')
+
 botonImagen = Button(pesImagen, text = 'Renderizar imagen', command =generarImagen ).place(x=35, y=110)
 botonLimpiarFiltros = Button(pesImagen, text='Limpiar Filtros', command=limpiarFiltros).place(x=450, y=110)
 
@@ -194,18 +235,35 @@ botonDoubleMirror = Button(pesImagen, text='DOUBLEMIRROR', command=doubleMirror)
 botonDoubleMirror.place(x=600, y=50)
 botonDoubleMirror.place_forget()
 
-botonGenerarReportes = Button(pesTokens, text='GENERAR REPORTE DE TOKENS VÁLIDOS', command= dibujo.imprimirTokens)
-botonGenerarReportes.place(x=400, y=400)
+botonGenerarReportes = Button(pesTokens, text='GENERAR REPORTE DE TOKENS VÁLIDOS', command= dibujo.imprimirTokens, style="MyButton2.TButton")
+botonGenerarReportes.place(x=200, y=300)
 
-botonSalir = Button(pesAnalizar, text='SALIR', command=ventana.destroy)
+botonGenerarReportesErrores = Button(pesTokens, text='GENERAR REPORTE DE TOKENS CON ERRORES', command= mensajeErrorNoHay, style="MyButton3.TButton")
+botonGenerarReportesErrores.place(x=200, y=400)
 
-botonSalir.place(x=300, y=300)
+botonSalir = Button(pesAnalizar, text='SALIR', command=ventana.destroy, style="MyButton1.TButton")
+
+botonSalir.place(x=260, y=300)
+
 
 
 
 #Labels
-labelNombres = Label(pesImagen, text="Lista de Nombres").place(x= 25, y=15)
+labelNombres = Label(pesImagen, text="Lista de Nombres")
+labelNombres.place(x= 25, y=15)
+
 labelNombres = Label(pesImagen, text="Filtros para la imagen").place(x= 450, y=15)
+
+#Extras
+logo = ImageTk.PhotoImage(Image.open('Pixelart.png'))
+logo1 = Label(pesAnalizar,image = logo).place(x=80,y=10)
+
+reportesLogo = ImageTk.PhotoImage(Image.open('reportes.png'))
+reportesLogo1 = Label(pesTokens,image = reportesLogo).place(x=50,y=10)
+
+bienvenido = ImageTk.PhotoImage(Image.open('bienvenido.png'))
+bienvenido1 = Label(pesAnalizar,image = bienvenido).place(x=170,y=450)
+
 
 
 
