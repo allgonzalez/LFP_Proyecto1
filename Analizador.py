@@ -489,7 +489,7 @@ class Analizador:
 
         for x in self.nombres:
             print("nombre: ", x)
-
+    
 
     def arreglosFiltros(self):
         bolFiltros = False
